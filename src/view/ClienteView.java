@@ -151,9 +151,7 @@ public class ClienteView extends JFrame {
             .findFirst()
             .orElse(null);
     if (cliente != null) {
-        // Exclui os pedidos do cliente
         pedidoRepository.removerPedidosPorCliente(cliente);
-        // Exclui o cliente
         clienteRepository.removerCliente(cliente);
         JOptionPane.showMessageDialog(this, "Cliente e seus pedidos foram excluídos com sucesso!");
     } else {

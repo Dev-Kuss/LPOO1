@@ -207,18 +207,31 @@ public class PedidoView extends JFrame {
     }
 
     private void salvarPedido() {
-        clienteSelecionado = (String) clienteComboBox.getSelectedItem();
-        if (clienteSelecionado == null || clienteSelecionado.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Selecione um cliente!");
-            return;
-        }
-        Cliente cliente = new Cliente(clienteSelecionado, "email@exemplo.com", "12345678");
-        Pedido novoPedido = pedidoRepository.criarPedido(cliente);
-        pizzasNoPedido.forEach(novoPedido::adicionarPizza);
-        pizzasNoPedido.clear();
-        atualizarResumoPedido();
-        JOptionPane.showMessageDialog(this, "Pedido salvo com sucesso para o cliente: " + clienteSelecionado);
+    clienteSelecionado = (String) clienteComboBox.getSelectedItem();
+    if (clienteSelecionado == null || clienteSelecionado.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Selecione um cliente!");
+        return;
     }
+    
+    Cliente cliente = clienteRepository.listarClientes().stream()
+            .filter(c -> c.getNome().equals(clienteSelecionado))
+            .findFirst()
+            .orElse(null);
+    
+    if (cliente == null) {
+        JOptionPane.showMessageDialog(this, "Cliente não encontrado no sistema!");
+        return;
+    }
+    
+    Pedido novoPedido = pedidoRepository.criarPedido(cliente);
+    
+    pizzasNoPedido.forEach(novoPedido::adicionarPizza);
+    pizzasNoPedido.clear();
+    
+    atualizarResumoPedido();
+    JOptionPane.showMessageDialog(this, "Pedido salvo com sucesso para o cliente: " + clienteSelecionado);
+}
+
 
     public void adicionarPizzaAoPedido(Pizza pizza) {
         pizzasNoPedido.add(pizza);
