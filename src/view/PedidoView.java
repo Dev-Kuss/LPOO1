@@ -44,13 +44,29 @@ public class PedidoView extends JFrame {
         panel.add(clienteComboBox);
 
         JLabel formaLabel = new JLabel("Escolha a forma da pizza:");
-        formaComboBox = new JComboBox<>();
-        carregarSabores(); // Load existing flavors into formaComboBox
+        formaComboBox = new JComboBox<>(new String[] { "Círculo", "Quadrado", "Triângulo" });
         panel.add(formaLabel);
         panel.add(formaComboBox);
 
+        JLabel dimensaoLabel = new JLabel("Informe as dimensões da pizza:");
+        dimensaoField = new JTextField();
+        panel.add(dimensaoLabel);
+        panel.add(dimensaoField);
+
+        JLabel areaLabel = new JLabel("Área da Pizza (cm²):");
+        areaField = new JTextField();
+        areaField.setEditable(false);
+        panel.add(areaLabel);
+        panel.add(areaField);
+
         btnAdicionarPizza = new JButton("Adicionar Pizza");
-        btnAdicionarPizza.addActionListener(e -> abrirTelaAdicionarPizza());
+        btnAdicionarPizza.addActionListener(e -> {
+            // Create a list of selected flavors
+            List<String> saboresSelecionados = List.of("Sabor Exemplo 1", "Sabor Exemplo 2"); // Replace with actual selected flavors
+            Forma forma = new Circulo(15); // Example: create a circle with radius 15
+            double precoPorCm2 = 5.00; // Example price per cm²
+            adicionarPizzaAoPedido(new Pizza(forma, saboresSelecionados, precoPorCm2));
+        });
         panel.add(btnAdicionarPizza);
 
         btnSalvar = new JButton("Salvar Pedido");
@@ -111,18 +127,14 @@ public class PedidoView extends JFrame {
         gerenciarPedidosFrame.setVisible(true);
     }
 
-    // Método para alterar o status do pedido
     private void alterarStatusPedido(String pedidoInfo) {
         if (pedidoInfo != null) {
-            // Obtendo o ID do pedido a partir da string de info (ex: "Pedido ID: 1 - Cliente: João - Status: aberto")
             String[] partes = pedidoInfo.split(" - ");
             int pedidoId = Integer.parseInt(partes[0].replace("Pedido ID: ", ""));
 
-            // Encontrando o pedido correspondente
             Pedido pedido = pedidoRepository.buscarPedidoPorId(pedidoId);
 
             if (pedido != null) {
-                // Atualizando o status
                 String novoStatus = JOptionPane.showInputDialog(this, "Digite o novo status (aberto, finalizado, cancelado):");
                 if (novoStatus != null) {
                     try {
@@ -136,7 +148,6 @@ public class PedidoView extends JFrame {
         }
     }
 
-    // Método para salvar o pedido
     private void salvarPedido() {
         clienteSelecionado = (String) clienteComboBox.getSelectedItem();
 
@@ -145,60 +156,20 @@ public class PedidoView extends JFrame {
             return;
         }
 
-        // Criando o cliente com base na seleção
         Cliente cliente = new Cliente(clienteSelecionado, "email@exemplo.com", "12345678");
-
-        // Criando o pedido no repositório
         Pedido novoPedido = pedidoRepository.criarPedido(cliente);
 
-        // Adicionando pizzas ao pedido
         pizzasNoPedido.forEach(novoPedido::adicionarPizza);
 
-        // Limpar as pizzas após salvar o pedido
         pizzasNoPedido.clear();
 
         JOptionPane.showMessageDialog(this, "Pedido salvo com sucesso para o cliente: " + clienteSelecionado);
     }
 
-    // Método para adicionar a pizza ao pedido
+    // Agora o método recebe uma Pizza como parâmetro
     public void adicionarPizzaAoPedido(Pizza pizza) {
         pizzasNoPedido.add(pizza);
         JOptionPane.showMessageDialog(this, "Pizza adicionada ao pedido!");
-    }
-
-    // Método para abrir a tela de adicionar pizza
-    private void abrirTelaAdicionarPizza() {
-        // Criando a janela para adicionar pizza
-        JFrame adicionarPizzaFrame = new JFrame("Adicionar Pizza");
-        adicionarPizzaFrame.setSize(300, 200);
-        adicionarPizzaFrame.setLayout(new BorderLayout());
-
-        // Campo para o sabor da pizza
-        JTextField saborField = new JTextField();
-        adicionarPizzaFrame.add(new JLabel("Digite o sabor da pizza:"), BorderLayout.NORTH);
-        adicionarPizzaFrame.add(saborField, BorderLayout.CENTER);
-
-        // Botão para adicionar pizza
-        JButton btnAdicionar = new JButton("Adicionar Pizza");
-        btnAdicionar.addActionListener(e -> {
-            String sabor = saborField.getText();
-            if (sabor.isEmpty()) {
-                JOptionPane.showMessageDialog(adicionarPizzaFrame, "O sabor não pode ser vazio!");
-            } else {
-                // Criando uma nova pizza com a forma, lista de sabores e preço
-                Forma forma = new Circulo(10); // Exemplo de forma
-                List<String> sabores = new ArrayList<>();
-                sabores.add(sabor); // Adiciona o sabor digitado à lista
-
-                double precoPorCm2 = 5.00; // Exemplo de preço por cm²
-                Pizza novaPizza = new Pizza(forma, sabores, precoPorCm2); // Use o construtor correto
-                adicionarPizzaAoPedido(novaPizza);
-                adicionarPizzaFrame.dispose();  // Fecha a janela
-            }
-        });
-        adicionarPizzaFrame.add(btnAdicionar, BorderLayout.SOUTH);
-
-        adicionarPizzaFrame.setVisible(true);
     }
 
     public static void main(String[] args) {
