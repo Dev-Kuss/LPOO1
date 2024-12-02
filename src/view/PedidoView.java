@@ -14,6 +14,7 @@ public class PedidoView extends JFrame {
     private JButton btnAdicionarPizza, btnSalvar, btnGerenciarPedidos;
     private JComboBox<String> clienteComboBox;
     private JPanel panel;
+    private JTextArea pedidoResumoArea;
 
     private ClienteRepository clienteRepository;
     private SaborRepository saborRepository;
@@ -30,7 +31,7 @@ public class PedidoView extends JFrame {
         this.pizzasNoPedido = new ArrayList<>();
 
         setTitle("Adicionar Pizza");
-        setSize(400, 500);
+        setSize(600, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -92,6 +93,7 @@ public class PedidoView extends JFrame {
                 double precoPorCm2 = 5.00;
                 Pizza pizza = new Pizza(forma, saboresSelecionados, precoPorCm2);
                 adicionarPizzaAoPedido(pizza);
+                atualizarResumoPedido();
             }
         });
         panel.add(btnAdicionarPizza);
@@ -104,7 +106,13 @@ public class PedidoView extends JFrame {
         btnGerenciarPedidos.addActionListener(e -> gerenciarPedidos());
         panel.add(btnGerenciarPedidos);
 
-        add(panel, BorderLayout.CENTER);
+        pedidoResumoArea = new JTextArea();
+        pedidoResumoArea.setEditable(false);
+        pedidoResumoArea.setBorder(BorderFactory.createTitledBorder("Resumo do Pedido"));
+        pedidoResumoArea.setPreferredSize(new Dimension(300, 500));
+
+        add(panel, BorderLayout.WEST);
+        add(new JScrollPane(pedidoResumoArea), BorderLayout.EAST);
         setVisible(true);
     }
 
@@ -152,26 +160,91 @@ public class PedidoView extends JFrame {
         }
     }
 
-    private void gerenciarPedidos() {
-        JFrame gerenciarPedidosFrame = new JFrame("Gerenciar Pedidos");
-        gerenciarPedidosFrame.setSize(400, 300);
-        gerenciarPedidosFrame.setLayout(new BorderLayout());
-        JList<String> listaPedidos = new JList<>();
-        DefaultListModel<String> pedidosListModel = new DefaultListModel<>();
-        List<Pedido> pedidos = pedidoRepository.listarPedidos();
-        for (Pedido pedido : pedidos) {
-            pedidosListModel.addElement("Pedido ID: " + pedido.getId() + " - Cliente: " + pedido.getCliente().getNome() + " - Status: " + pedido.getStatus());
+    private void atualizarResumoPedido() {
+        StringBuilder resumo = new StringBuilder();
+        resumo.append("Cliente: ").append(clienteSelecionado != null ? clienteSelecionado : "Não selecionado").append("\n");
+        resumo.append("Pizzas no Pedido:\n");
+        double precoTotal = 0.0;
+        for (Pizza pizza : pizzasNoPedido) {
+            resumo.append("- Forma: ").append(pizza.getForma().getClass().getSimpleName());
+            resumo.append(", Área: ").append(pizza.getForma().calcularArea()).append(" cm²");
+            resumo.append(", Sabores: ");
+            resumo.append(pizza.getSabores().stream().map(Sabor::getNome).toList());
+            resumo.append(", Preço: R$").append(pizza.calcularPreco()).append("\n");
+            precoTotal += pizza.calcularPreco();
         }
-        listaPedidos.setModel(pedidosListModel);
-        gerenciarPedidosFrame.add(new JScrollPane(listaPedidos), BorderLayout.CENTER);
-        JButton btnFechar = new JButton("Fechar");
-        btnFechar.addActionListener(e -> gerenciarPedidosFrame.dispose());
-        gerenciarPedidosFrame.add(btnFechar, BorderLayout.SOUTH);
-        JButton btnAlterarStatus = new JButton("Alterar Status");
-        btnAlterarStatus.addActionListener(e -> alterarStatusPedido(listaPedidos.getSelectedValue()));
-        gerenciarPedidosFrame.add(btnAlterarStatus, BorderLayout.NORTH);
-        gerenciarPedidosFrame.setVisible(true);
+        resumo.append("\nPreço Total: R$").append(precoTotal);
+        pedidoResumoArea.setText(resumo.toString());
     }
+
+private void gerenciarPedidos() {
+    JFrame gerenciarPedidosFrame = new JFrame("Gerenciar Pedidos");
+    gerenciarPedidosFrame.setSize(600, 400);
+    gerenciarPedidosFrame.setLayout(new BorderLayout());
+
+    DefaultListModel<String> pedidosListModel = new DefaultListModel<>();
+    JList<String> listaPedidos = new JList<>(pedidosListModel);
+
+    List<Pedido> pedidos = pedidoRepository.listarPedidos();
+    for (Pedido pedido : pedidos) {
+        pedidosListModel.addElement("Pedido ID: " + pedido.getId() + " - Cliente: " + pedido.getCliente().getNome() + " - Status: " + pedido.getStatus());
+    }
+
+    JPanel detalhePanel = new JPanel();
+    detalhePanel.setLayout(new BoxLayout(detalhePanel, BoxLayout.Y_AXIS));
+    JTextArea detalheArea = new JTextArea();
+    detalheArea.setEditable(false);
+    detalheArea.setBorder(BorderFactory.createTitledBorder("Detalhes do Pedido"));
+    detalhePanel.add(new JScrollPane(detalheArea));
+
+    listaPedidos.addListSelectionListener(e -> {
+        if (!e.getValueIsAdjusting()) {
+            String selectedValue = listaPedidos.getSelectedValue();
+            if (selectedValue != null) {
+                int pedidoId = Integer.parseInt(selectedValue.split(" - ")[0].replace("Pedido ID: ", ""));
+                Pedido pedido = pedidoRepository.buscarPedidoPorId(pedidoId);
+                if (pedido != null) {
+                    StringBuilder detalhes = new StringBuilder();
+                    detalhes.append("Cliente: ").append(pedido.getCliente().getNome()).append("\n");
+                    detalhes.append("Status: ").append(pedido.getStatus()).append("\n\n");
+                    detalhes.append("Pizzas:\n");
+                    double precoTotal = 0.0;
+                    for (Pizza pizza : pedido.getPizzas()) {
+                        detalhes.append("- Forma: ").append(pizza.getForma().getClass().getSimpleName());
+                        detalhes.append(", Área: ").append(pizza.getForma().calcularArea()).append(" cm²");
+                        detalhes.append(", Sabores: ");
+                        detalhes.append(pizza.getSabores().stream().map(Sabor::getNome).toList());
+                        detalhes.append(", Preço: R$").append(pizza.calcularPreco()).append("\n");
+                        precoTotal += pizza.calcularPreco();
+                    }
+                    detalhes.append("\nPreço Total: R$").append(precoTotal);
+                    detalheArea.setText(detalhes.toString());
+                }
+            }
+        }
+    });
+
+    gerenciarPedidosFrame.add(new JScrollPane(listaPedidos), BorderLayout.WEST);
+    gerenciarPedidosFrame.add(detalhePanel, BorderLayout.CENTER);
+
+    JButton btnFechar = new JButton("Fechar");
+    btnFechar.addActionListener(e -> gerenciarPedidosFrame.dispose());
+    gerenciarPedidosFrame.add(btnFechar, BorderLayout.SOUTH);
+
+    JButton btnAlterarStatus = new JButton("Alterar Status");
+    btnAlterarStatus.addActionListener(e -> {
+        String selectedValue = listaPedidos.getSelectedValue();
+        if (selectedValue != null) {
+            alterarStatusPedido(selectedValue);
+        } else {
+            JOptionPane.showMessageDialog(gerenciarPedidosFrame, "Selecione um pedido para alterar o status.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    });
+    gerenciarPedidosFrame.add(btnAlterarStatus, BorderLayout.NORTH);
+
+    gerenciarPedidosFrame.setVisible(true);
+}
+
 
     private void alterarStatusPedido(String pedidoInfo) {
         if (pedidoInfo != null) {
