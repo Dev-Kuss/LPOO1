@@ -52,7 +52,6 @@ public class AtualizarPrecoView extends JFrame {
             double precoEspecial = Double.parseDouble(txtEspecial.getText());
             double precoPremium = Double.parseDouble(txtPremium.getText());
 
-            // Atualizar os preços (armazenar globalmente na classe PrecoConfig)
             PrecoConfig.setPrecoSimples(precoSimples);
             PrecoConfig.setPrecoEspecial(precoEspecial);
             PrecoConfig.setPrecoPremium(precoPremium);
