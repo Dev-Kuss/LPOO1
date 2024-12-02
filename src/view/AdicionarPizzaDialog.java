@@ -66,7 +66,7 @@ public class AdicionarPizzaDialog extends JDialog {
     }
 
     private void adicionarPizza() {
-        List<String> saboresSelecionados = listaSabores.getSelectedValuesList();
+        List<Sabor> saboresSelecionados = saborRepository.listarSabores();
         if (saboresSelecionados.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Selecione pelo menos um sabor!");
             return;

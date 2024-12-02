@@ -55,8 +55,11 @@ public class Pedido {
     public List<String> listarSabores() {
         List<String> sabores = new ArrayList<>();
         for (Pizza pizza : pizzas) {
-            sabores.addAll(pizza.getSabores());
+            for (Sabor sabor : pizza.getSabores()) {
+                sabores.add(sabor.toString()); // Assuming Sabor has a toString() method
+            }
         }
         return sabores;
     }
 }
+

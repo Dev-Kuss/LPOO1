@@ -20,6 +20,8 @@ public class PedidoView extends JFrame {
     private PedidoRepository pedidoRepository;
     private List<Pizza> pizzasNoPedido;
     private String clienteSelecionado;
+    private JPanel saboresPanel;
+    private List<JCheckBox> checkboxesSabores;
 
     public PedidoView(ClienteRepository clienteRepository, SaborRepository saborRepository, PedidoRepository pedidoRepository) {
         this.clienteRepository = clienteRepository;
@@ -28,7 +30,7 @@ public class PedidoView extends JFrame {
         this.pizzasNoPedido = new ArrayList<>();
 
         setTitle("Adicionar Pizza");
-        setSize(400, 300);
+        setSize(400, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -36,7 +38,6 @@ public class PedidoView extends JFrame {
         panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        // Adicionando o comboBox para selecionar o cliente
         JLabel clienteLabel = new JLabel("Escolha o Cliente:");
         clienteComboBox = new JComboBox<>();
         carregarClientes();
@@ -59,13 +60,39 @@ public class PedidoView extends JFrame {
         panel.add(areaLabel);
         panel.add(areaField);
 
+        saboresPanel = new JPanel();
+        saboresPanel.setLayout(new BoxLayout(saboresPanel, BoxLayout.Y_AXIS));
+        saboresPanel.setBorder(BorderFactory.createTitledBorder("Selecione até dois sabores"));
+        checkboxesSabores = new ArrayList<>();
+        carregarSabores();
+        panel.add(saboresPanel);
+
         btnAdicionarPizza = new JButton("Adicionar Pizza");
         btnAdicionarPizza.addActionListener(e -> {
-            // Create a list of selected flavors
-            List<String> saboresSelecionados = List.of("Sabor Exemplo 1", "Sabor Exemplo 2"); // Replace with actual selected flavors
-            Forma forma = new Circulo(15); // Example: create a circle with radius 15
-            double precoPorCm2 = 5.00; // Example price per cm²
-            adicionarPizzaAoPedido(new Pizza(forma, saboresSelecionados, precoPorCm2));
+            Forma forma = criarForma();
+            if (forma != null) {
+                List<Sabor> saboresSelecionados = new ArrayList<>();
+                for (JCheckBox checkBox : checkboxesSabores) {
+                    if (checkBox.isSelected()) {
+                        String nomeSabor = checkBox.getText().split(" - ")[0];
+                        saboresSelecionados.add(saborRepository.listarSabores().stream()
+                                .filter(s -> s.getNome().equals(nomeSabor))
+                                .findFirst()
+                                .orElse(null));
+                    }
+                }
+                if (saboresSelecionados.size() > 2) {
+                    JOptionPane.showMessageDialog(this, "Uma pizza pode ter no máximo dois sabores.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (saboresSelecionados.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Selecione pelo menos um sabor para a pizza.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                double precoPorCm2 = 5.00;
+                Pizza pizza = new Pizza(forma, saboresSelecionados, precoPorCm2);
+                adicionarPizzaAoPedido(pizza);
+            }
         });
         panel.add(btnAdicionarPizza);
 
@@ -73,7 +100,6 @@ public class PedidoView extends JFrame {
         btnSalvar.addActionListener(e -> salvarPedido());
         panel.add(btnSalvar);
 
-        // Botão para Gerenciar Pedidos
         btnGerenciarPedidos = new JButton("Gerenciar Pedidos");
         btnGerenciarPedidos.addActionListener(e -> gerenciarPedidos());
         panel.add(btnGerenciarPedidos);
@@ -84,7 +110,7 @@ public class PedidoView extends JFrame {
 
     private void carregarClientes() {
         List<String> clientes = clienteRepository.listarClientes().stream()
-                .map(c -> c.getNome())
+                .map(Cliente::getNome)
                 .toList();
         for (String cliente : clientes) {
             clienteComboBox.addItem(cliente);
@@ -94,7 +120,35 @@ public class PedidoView extends JFrame {
     private void carregarSabores() {
         List<Sabor> sabores = saborRepository.listarSabores();
         for (Sabor sabor : sabores) {
-            formaComboBox.addItem(sabor.getNome());
+            JCheckBox checkBox = new JCheckBox(sabor.getNome() + " - " + sabor.getTipo());
+            checkboxesSabores.add(checkBox);
+            saboresPanel.add(checkBox);
+        }
+    }
+
+    private Forma criarForma() {
+        String formaSelecionada = (String) formaComboBox.getSelectedItem();
+        String dimensaoTexto = dimensaoField.getText().trim();
+        if (dimensaoTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, informe as dimensões da pizza.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+        try {
+            double dimensao = Double.parseDouble(dimensaoTexto);
+            switch (formaSelecionada) {
+                case "Círculo":
+                    return new Circulo(dimensao);
+                case "Quadrado":
+                    return new Quadrado(dimensao);
+                case "Triângulo":
+                    return new Triangulo(dimensao);
+                default:
+                    JOptionPane.showMessageDialog(this, "Forma inválida selecionada.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return null;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Por favor, informe um valor numérico válido para as dimensões.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return null;
         }
     }
 
@@ -102,28 +156,20 @@ public class PedidoView extends JFrame {
         JFrame gerenciarPedidosFrame = new JFrame("Gerenciar Pedidos");
         gerenciarPedidosFrame.setSize(400, 300);
         gerenciarPedidosFrame.setLayout(new BorderLayout());
-
         JList<String> listaPedidos = new JList<>();
         DefaultListModel<String> pedidosListModel = new DefaultListModel<>();
-
         List<Pedido> pedidos = pedidoRepository.listarPedidos();
         for (Pedido pedido : pedidos) {
             pedidosListModel.addElement("Pedido ID: " + pedido.getId() + " - Cliente: " + pedido.getCliente().getNome() + " - Status: " + pedido.getStatus());
         }
-
         listaPedidos.setModel(pedidosListModel);
         gerenciarPedidosFrame.add(new JScrollPane(listaPedidos), BorderLayout.CENTER);
-
-        // Botão de fechar
         JButton btnFechar = new JButton("Fechar");
         btnFechar.addActionListener(e -> gerenciarPedidosFrame.dispose());
         gerenciarPedidosFrame.add(btnFechar, BorderLayout.SOUTH);
-
-        // Botão para alterar o status
         JButton btnAlterarStatus = new JButton("Alterar Status");
         btnAlterarStatus.addActionListener(e -> alterarStatusPedido(listaPedidos.getSelectedValue()));
         gerenciarPedidosFrame.add(btnAlterarStatus, BorderLayout.NORTH);
-
         gerenciarPedidosFrame.setVisible(true);
     }
 
@@ -131,9 +177,7 @@ public class PedidoView extends JFrame {
         if (pedidoInfo != null) {
             String[] partes = pedidoInfo.split(" - ");
             int pedidoId = Integer.parseInt(partes[0].replace("Pedido ID: ", ""));
-
             Pedido pedido = pedidoRepository.buscarPedidoPorId(pedidoId);
-
             if (pedido != null) {
                 String novoStatus = JOptionPane.showInputDialog(this, "Digite o novo status (aberto, finalizado, cancelado):");
                 if (novoStatus != null) {
@@ -150,23 +194,17 @@ public class PedidoView extends JFrame {
 
     private void salvarPedido() {
         clienteSelecionado = (String) clienteComboBox.getSelectedItem();
-
         if (clienteSelecionado == null || clienteSelecionado.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Selecione um cliente!");
             return;
         }
-
         Cliente cliente = new Cliente(clienteSelecionado, "email@exemplo.com", "12345678");
         Pedido novoPedido = pedidoRepository.criarPedido(cliente);
-
         pizzasNoPedido.forEach(novoPedido::adicionarPizza);
-
         pizzasNoPedido.clear();
-
         JOptionPane.showMessageDialog(this, "Pedido salvo com sucesso para o cliente: " + clienteSelecionado);
     }
 
-    // Agora o método recebe uma Pizza como parâmetro
     public void adicionarPizzaAoPedido(Pizza pizza) {
         pizzasNoPedido.add(pizza);
         JOptionPane.showMessageDialog(this, "Pizza adicionada ao pedido!");

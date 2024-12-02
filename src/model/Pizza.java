@@ -5,21 +5,22 @@ import java.util.List;
 
 public class Pizza {
     private Forma forma;
-    private List<String> sabores;
+    private List<Sabor> sabores;
     private double precoPorCm2;
 
-    public Pizza(Forma forma, List<String> sabores, double precoPorCm2) {
-        if (sabores.size() > 2) {
+    public Pizza(Forma forma, List<Sabor> saboresSelecionados, double precoPorCm2) {
+        if (saboresSelecionados.size() > 2) {
             throw new IllegalArgumentException("Uma pizza pode ter no máximo dois sabores.");
         }
         this.forma = forma;
-        this.sabores = new ArrayList<>(sabores);
+        this.sabores = new ArrayList<Sabor>(saboresSelecionados); // Specify the type parameter here
         this.precoPorCm2 = precoPorCm2;
     }
 
     public double calcularPreco() {
         return forma.calcularArea() * precoPorCm2;
     }
+
 
     public Forma getForma() {
         return forma;
@@ -29,11 +30,11 @@ public class Pizza {
         this.forma = forma;
     }
 
-    public List<String> getSabores() {
+    public List<Sabor> getSabores() {
         return sabores;
     }
 
-    public void setSabores(List<String> sabores) {
+    public void setSabores(List<Sabor> sabores) {
         if (sabores.size() > 2) {
             throw new IllegalArgumentException("Uma pizza pode ter no máximo dois sabores.");
         }
