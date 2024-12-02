@@ -56,12 +56,6 @@ public class PedidoView extends JFrame {
         panel.add(dimensaoLabel);
         panel.add(dimensaoField);
 
-//        JLabel areaLabel = new JLabel("Área da Pizza (cm²):");
-//        areaField = new JTextField();
-//        areaField.setEditable(false);
-//        panel.add(areaLabel);
-//        panel.add(areaField);
-
         btnCalcularDimensao = new JButton("Calcular Dimensão em cm²");
         btnCalcularDimensao.addActionListener(e -> calcularDimensao());
         panel.add(btnCalcularDimensao);
@@ -244,7 +238,7 @@ public class PedidoView extends JFrame {
             JOptionPane.showMessageDialog(this, "A área deve estar entre 100 e 1600 cm².", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        int dimensaoCalculada; // Armazena o valor calculado como inteiro
+        int dimensaoCalculada;
         switch (formaSelecionada) {
             case "Círculo":
                 dimensaoCalculada = (int) Math.round(Math.sqrt(area / Math.PI));

@@ -35,10 +35,6 @@ public class PedidoRepository {
         return novoPedido;
     }
 
-    private int gerarIdPedido() {
-        return pedidos.size() + 1;
-    }
-
     public void removerPedido(Pedido pedido) {
         pedidos.remove(pedido);
     }

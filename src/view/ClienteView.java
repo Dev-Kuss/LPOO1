@@ -88,7 +88,7 @@ public class ClienteView extends JFrame {
     }
 
     private void atualizarTabela() {
-        model.setRowCount(0); // Limpa a tabela
+        model.setRowCount(0);
         for (Cliente cliente : clienteRepository.listarClientes()) {
             model.addRow(new Object[]{cliente.getNome(), cliente.getSobrenome(), cliente.getTelefone()});
         }
@@ -173,7 +173,7 @@ public class ClienteView extends JFrame {
                 .filter(cliente -> cliente.getSobrenome().toLowerCase().contains(filtro) || cliente.getTelefone().contains(filtro))
                 .collect(Collectors.toList());
 
-        model.setRowCount(0); // Limpa a tabela
+        model.setRowCount(0);
         for (Cliente cliente : filtrados) {
             model.addRow(new Object[]{cliente.getNome(), cliente.getSobrenome(), cliente.getTelefone()});
         }

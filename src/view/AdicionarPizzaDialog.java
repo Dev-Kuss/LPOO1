@@ -39,12 +39,10 @@ public class AdicionarPizzaDialog extends JDialog {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(3, 2));
 
-        // ComboBox para escolher a forma da pizza
         panel.add(new JLabel("Forma:"));
         formaComboBox = new JComboBox<>(new String[] { "Círculo", "Quadrado", "Triângulo" });
         panel.add(formaComboBox);
 
-        // Campo de texto para informar a dimensão da pizza
         panel.add(new JLabel("Dimensão (cm):"));
         dimensaoField = new JTextField();
         panel.add(dimensaoField);
@@ -72,15 +70,12 @@ public class AdicionarPizzaDialog extends JDialog {
             return;
         }
 
-        // Obtém a dimensão informada pelo usuário
         String dimensaoTexto = dimensaoField.getText();
         double dimensao = 0;
 
         try {
-            // Tenta converter o texto da dimensão para um número
             dimensao = Double.parseDouble(dimensaoTexto);
         } catch (NumberFormatException e) {
-            // Caso ocorra erro na conversão, exibe uma mensagem de erro
             JOptionPane.showMessageDialog(this, "Dimensão inválida!");
             return;
         }
@@ -88,14 +83,12 @@ public class AdicionarPizzaDialog extends JDialog {
         Forma forma = null;
         String formaSelecionada = (String) formaComboBox.getSelectedItem();
 
-        // Verifica se foi selecionada uma forma válida
         if (formaSelecionada == null || formaSelecionada.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Escolha uma forma válida!");
             return;
         }
 
         try {
-            // Cria a forma de acordo com a seleção do usuário
             switch (formaSelecionada) {
                 case "Círculo":
                     forma = new Circulo(dimensao);
@@ -111,19 +104,15 @@ public class AdicionarPizzaDialog extends JDialog {
                     return;
             }
         } catch (IllegalArgumentException e) {
-            // Se ocorrer erro na criação da forma, exibe a mensagem de erro
             JOptionPane.showMessageDialog(this, e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // Cria a nova pizza com a forma, sabores e preço por cm²
-        double precoPorCm2 = 5.00;  // Preço fixo por cm² (ajustável conforme necessário)
+        double precoPorCm2 = 5.00;
         Pizza novaPizza = new Pizza(forma, saboresSelecionados, precoPorCm2);
 
-        // Chama o método para adicionar a pizza ao pedido
         pedidoView.adicionarPizzaAoPedido(novaPizza);
 
-        // Fecha o dialog
         dispose();
     }
 }

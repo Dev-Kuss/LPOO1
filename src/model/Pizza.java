@@ -13,7 +13,7 @@ public class Pizza {
             throw new IllegalArgumentException("Uma pizza pode ter no máximo dois sabores.");
         }
         this.forma = forma;
-        this.sabores = new ArrayList<Sabor>(saboresSelecionados); // Specify the type parameter here
+        this.sabores = new ArrayList<Sabor>(saboresSelecionados);
         this.precoPorCm2 = precoPorCm2;
     }
 

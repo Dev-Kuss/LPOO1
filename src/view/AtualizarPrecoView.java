@@ -20,17 +20,17 @@ public class AtualizarPrecoView extends JFrame {
 
         add(new JLabel("Preço por cm² (Simples):"));
         txtSimples = new JTextField();
-        txtSimples.setText(String.valueOf(PrecoConfig.getPrecoSimples()));  // Carregar o preço atual
+        txtSimples.setText(String.valueOf(PrecoConfig.getPrecoSimples()));  
         add(txtSimples);
 
         add(new JLabel("Preço por cm² (Especial):"));
         txtEspecial = new JTextField();
-        txtEspecial.setText(String.valueOf(PrecoConfig.getPrecoEspecial()));  // Carregar o preço atual
+        txtEspecial.setText(String.valueOf(PrecoConfig.getPrecoEspecial()));  
         add(txtEspecial);
 
         add(new JLabel("Preço por cm² (Premium):"));
         txtPremium = new JTextField();
-        txtPremium.setText(String.valueOf(PrecoConfig.getPrecoPremium()));  // Carregar o preço atual
+        txtPremium.setText(String.valueOf(PrecoConfig.getPrecoPremium()));  
         add(txtPremium);
 
         btnSalvar = new JButton("Salvar");
