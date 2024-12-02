@@ -3,7 +3,7 @@ package view;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import model.Cliente;
-import repository.ClienteRepository;
+import repository.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,13 +13,16 @@ public class ClienteView extends JFrame {
     private JTable tableClientes;
     private DefaultTableModel model;
     private ClienteRepository clienteRepository;
+    private PedidoRepository pedidoRepository;
 
-    public ClienteView(ClienteRepository clienteRepository) {
+    public ClienteView(ClienteRepository clienteRepository, PedidoRepository pedidoRepository) {
         this.clienteRepository = clienteRepository;
+        this.pedidoRepository = pedidoRepository;
+
 
         setTitle("Gerenciamento de Clientes");
         setSize(700, 500);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(null);
 
         JLabel lblNome = new JLabel("Nome:");
@@ -137,21 +140,27 @@ public class ClienteView extends JFrame {
     }
 
     private void excluirCliente() {
-        int selectedRow = tableClientes.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Selecione um cliente para excluir!");
-            return;
-        }
-        String telefone = (String) model.getValueAt(selectedRow, 2);
-        Cliente cliente = clienteRepository.listarClientes().stream()
-                .filter(c -> c.getTelefone().equals(telefone))
-                .findFirst()
-                .orElse(null);
-        if (cliente != null) {
-            clienteRepository.removerCliente(cliente);
-        }
-        atualizarTabela();
+    int selectedRow = tableClientes.getSelectedRow();
+    if (selectedRow == -1) {
+        JOptionPane.showMessageDialog(this, "Selecione um cliente para excluir!");
+        return;
     }
+    String telefone = (String) model.getValueAt(selectedRow, 2);
+    Cliente cliente = clienteRepository.listarClientes().stream()
+            .filter(c -> c.getTelefone().equals(telefone))
+            .findFirst()
+            .orElse(null);
+    if (cliente != null) {
+        // Exclui os pedidos do cliente
+        pedidoRepository.removerPedidosPorCliente(cliente);
+        // Exclui o cliente
+        clienteRepository.removerCliente(cliente);
+        JOptionPane.showMessageDialog(this, "Cliente e seus pedidos foram excluídos com sucesso!");
+    } else {
+        JOptionPane.showMessageDialog(this, "Cliente não encontrado!");
+    }
+    atualizarTabela();
+}
 
     private void filtrarClientes() {
         String filtro = txtFiltro.getText().toLowerCase();
@@ -171,7 +180,8 @@ public class ClienteView extends JFrame {
     }
 
     public static void main(String[] args) {
-        ClienteRepository clienteRepository = new ClienteRepository();
-        SwingUtilities.invokeLater(() -> new ClienteView(clienteRepository).setVisible(true));
-    }
+    ClienteRepository clienteRepository = new ClienteRepository();
+    PedidoRepository pedidoRepository = new PedidoRepository();
+    SwingUtilities.invokeLater(() -> new ClienteView(clienteRepository, pedidoRepository).setVisible(true));
+}
 }

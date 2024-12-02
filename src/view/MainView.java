@@ -37,7 +37,7 @@ public class MainView extends JFrame {
         btnPrecos.setBounds(100, 200, 200, 30);
         add(btnPrecos);
 
-        btnClientes.addActionListener(e -> new ClienteView(clienteRepository).setVisible(true));
+        btnClientes.addActionListener(e -> new ClienteView(clienteRepository, pedidoRepository).setVisible(true));
         btnSabores.addActionListener(e -> new SaborView(saborRepository).setVisible(true));
         btnPedidos.addActionListener(e -> new PedidoView(clienteRepository, saborRepository, pedidoRepository).setVisible(true));
         btnPrecos.addActionListener(e -> new AtualizarPrecoView().setVisible(true));

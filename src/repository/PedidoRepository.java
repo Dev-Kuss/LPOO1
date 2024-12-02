@@ -64,4 +64,8 @@ public class PedidoRepository {
         }
         return 0.0;
     }
+    
+    public void removerPedidosPorCliente(Cliente cliente) {
+    pedidos.removeIf(pedido -> pedido.getCliente().equals(cliente));
+}
 }
