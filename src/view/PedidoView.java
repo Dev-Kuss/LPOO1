@@ -14,7 +14,7 @@ public class PedidoView extends JFrame {
     private JButton btnAdicionarPizza, btnSalvar, btnGerenciarPedidos;
     private JComboBox<String> clienteComboBox;
     private JPanel panel;
-    private JTextArea pedidoResumoArea;
+    private JPanel pedidoResumoPanel;
 
     private ClienteRepository clienteRepository;
     private SaborRepository saborRepository;
@@ -31,7 +31,7 @@ public class PedidoView extends JFrame {
         this.pizzasNoPedido = new ArrayList<>();
 
         setTitle("Adicionar Pizza");
-        setSize(600, 500);
+        setSize(800, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -67,6 +67,7 @@ public class PedidoView extends JFrame {
         checkboxesSabores = new ArrayList<>();
         carregarSabores();
         panel.add(saboresPanel);
+        
 
         btnAdicionarPizza = new JButton("Adicionar Pizza");
         btnAdicionarPizza.addActionListener(e -> {
@@ -106,13 +107,12 @@ public class PedidoView extends JFrame {
         btnGerenciarPedidos.addActionListener(e -> gerenciarPedidos());
         panel.add(btnGerenciarPedidos);
 
-        pedidoResumoArea = new JTextArea();
-        pedidoResumoArea.setEditable(false);
-        pedidoResumoArea.setBorder(BorderFactory.createTitledBorder("Resumo do Pedido"));
-        pedidoResumoArea.setPreferredSize(new Dimension(300, 500));
+        pedidoResumoPanel = new JPanel();
+        pedidoResumoPanel.setLayout(new BoxLayout(pedidoResumoPanel, BoxLayout.Y_AXIS));
+        pedidoResumoPanel.setBorder(BorderFactory.createTitledBorder("Resumo do Pedido"));
 
         add(panel, BorderLayout.WEST);
-        add(new JScrollPane(pedidoResumoArea), BorderLayout.EAST);
+        add(new JScrollPane(pedidoResumoPanel), BorderLayout.CENTER);
         setVisible(true);
     }
 
@@ -161,23 +161,28 @@ public class PedidoView extends JFrame {
     }
 
     private void atualizarResumoPedido() {
-        StringBuilder resumo = new StringBuilder();
-        resumo.append("Cliente: ").append(clienteSelecionado != null ? clienteSelecionado : "Não selecionado").append("\n");
-        resumo.append("Pizzas no Pedido:\n");
+        pedidoResumoPanel.removeAll();
+        pedidoResumoPanel.add(new JLabel("Cliente: " + (clienteSelecionado != null ? clienteSelecionado : "Não selecionado")));
+        pedidoResumoPanel.add(new JLabel("Pizzas no Pedido:"));
         double precoTotal = 0.0;
         for (Pizza pizza : pizzasNoPedido) {
-            resumo.append("- Forma: ").append(pizza.getForma().getClass().getSimpleName());
-            resumo.append(", Área: ").append(pizza.getForma().calcularArea()).append(" cm²");
-            resumo.append(", Sabores: ");
-            resumo.append(pizza.getSabores().stream().map(Sabor::getNome).toList());
-            resumo.append(", Preço: R$").append(pizza.calcularPreco()).append("\n");
+            JPanel pizzaPanel = new JPanel();
+            pizzaPanel.setLayout(new BoxLayout(pizzaPanel, BoxLayout.Y_AXIS));
+            pizzaPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+            pizzaPanel.add(new JLabel("- Forma: " + pizza.getForma().getClass().getSimpleName()));
+            pizzaPanel.add(new JLabel("  Área: " + formatarDecimal(pizza.getForma().calcularArea()) + " cm²"));
+            pizzaPanel.add(new JLabel("  Sabores: " + pizza.getSabores().stream().map(Sabor::getNome).toList()));
+            pizzaPanel.add(new JLabel("  Preço: R$" + formatarDecimal(pizza.calcularPreco())));
+            pedidoResumoPanel.add(pizzaPanel);
             precoTotal += pizza.calcularPreco();
         }
-        resumo.append("\nPreço Total: R$").append(precoTotal);
-        pedidoResumoArea.setText(resumo.toString());
+        pedidoResumoPanel.add(new JLabel("Preço Total: R$" + formatarDecimal(precoTotal)));
+        pedidoResumoPanel.revalidate();
+        pedidoResumoPanel.repaint();
     }
 
-private void gerenciarPedidos() {
+
+    private void gerenciarPedidos() {
     JFrame gerenciarPedidosFrame = new JFrame("Gerenciar Pedidos");
     gerenciarPedidosFrame.setSize(600, 400);
     gerenciarPedidosFrame.setLayout(new BorderLayout());
@@ -211,13 +216,13 @@ private void gerenciarPedidos() {
                     double precoTotal = 0.0;
                     for (Pizza pizza : pedido.getPizzas()) {
                         detalhes.append("- Forma: ").append(pizza.getForma().getClass().getSimpleName());
-                        detalhes.append(", Área: ").append(pizza.getForma().calcularArea()).append(" cm²");
+                        detalhes.append(", Área: ").append(formatarDecimal(pizza.getForma().calcularArea())).append(" cm²");
                         detalhes.append(", Sabores: ");
                         detalhes.append(pizza.getSabores().stream().map(Sabor::getNome).toList());
-                        detalhes.append(", Preço: R$").append(pizza.calcularPreco()).append("\n");
+                        detalhes.append(", Preço: R$").append(formatarDecimal(pizza.calcularPreco())).append("\n");
                         precoTotal += pizza.calcularPreco();
                     }
-                    detalhes.append("\nPreço Total: R$").append(precoTotal);
+                    detalhes.append("\nPreço Total: R$").append(formatarDecimal(precoTotal));
                     detalheArea.setText(detalhes.toString());
                 }
             }
@@ -275,6 +280,7 @@ private void gerenciarPedidos() {
         Pedido novoPedido = pedidoRepository.criarPedido(cliente);
         pizzasNoPedido.forEach(novoPedido::adicionarPizza);
         pizzasNoPedido.clear();
+        atualizarResumoPedido();
         JOptionPane.showMessageDialog(this, "Pedido salvo com sucesso para o cliente: " + clienteSelecionado);
     }
 
@@ -282,6 +288,10 @@ private void gerenciarPedidos() {
         pizzasNoPedido.add(pizza);
         JOptionPane.showMessageDialog(this, "Pizza adicionada ao pedido!");
     }
+    
+    private String formatarDecimal(double valor) {
+    return String.format("%.2f", valor);
+}
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new PedidoView(new ClienteRepository(), new SaborRepository(), new PedidoRepository()));
