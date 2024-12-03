@@ -15,6 +15,11 @@ public class Circulo extends Forma {
         return Math.PI * raio * raio;
     }
 
+    @Override
+    public double calcularDimensaoPorArea(double area) {
+        return Math.sqrt(area / Math.PI);
+    }
+
     public double getRaio() {
         return raio;
     }

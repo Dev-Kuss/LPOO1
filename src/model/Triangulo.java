@@ -1,6 +1,5 @@
 package model;
 
-
 public class Triangulo extends Forma {
     private double lado;
 
@@ -14,6 +13,11 @@ public class Triangulo extends Forma {
     @Override
     public double calcularArea() {
         return (Math.sqrt(3) / 4) * lado * lado;
+    }
+
+    @Override
+    public double calcularDimensaoPorArea(double area) {
+        return Math.sqrt((4 * area) / Math.sqrt(3));
     }
 
     public double getLado() {

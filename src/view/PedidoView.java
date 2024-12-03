@@ -241,37 +241,43 @@ public class PedidoView extends JFrame {
     private void calcularDimensao() {
     String formaSelecionada = (String) formaComboBox.getSelectedItem();
     String areaTexto = dimensaoField.getText().trim();
+
     if (areaTexto.isEmpty()) {
         JOptionPane.showMessageDialog(this, "Por favor, informe a área desejada (100 a 1600 cm²).", "Erro", JOptionPane.ERROR_MESSAGE);
         return;
     }
+
     try {
         double area = Double.parseDouble(areaTexto);
         if (area < 100 || area > 1600) {
             JOptionPane.showMessageDialog(this, "A área deve estar entre 100 e 1600 cm².", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        int dimensaoCalculada;
+
+        Forma forma;
         switch (formaSelecionada) {
             case "Círculo":
-                dimensaoCalculada = (int) Math.round(Math.sqrt(area / Math.PI));
-                dimensaoField.setText(String.valueOf(dimensaoCalculada));
+                forma = new Circulo(0); 
                 break;
             case "Quadrado":
-                dimensaoCalculada = (int) Math.round(Math.sqrt(area));
-                dimensaoField.setText(String.valueOf(dimensaoCalculada));
+                forma = new Quadrado(0);
                 break;
             case "Triângulo":
-                dimensaoCalculada = (int) Math.round(Math.sqrt((4 * area) / Math.sqrt(3)));
-                dimensaoField.setText(String.valueOf(dimensaoCalculada));
+                forma = new Triangulo(0);
                 break;
             default:
                 JOptionPane.showMessageDialog(this, "Forma inválida selecionada.", "Erro", JOptionPane.ERROR_MESSAGE);
+                return;
         }
+
+        double dimensaoCalculada = forma.calcularDimensaoPorArea(area);
+        dimensaoField.setText(String.format("%.2f", dimensaoCalculada));
     } catch (NumberFormatException e) {
         JOptionPane.showMessageDialog(this, "Por favor, informe um valor numérico válido para a área.", "Erro", JOptionPane.ERROR_MESSAGE);
     }
 }
+
+
 
     private String formatarDecimal(double valor) {
         return String.format("%.2f", valor);

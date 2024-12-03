@@ -15,6 +15,11 @@ public class Quadrado extends Forma {
         return lado * lado;
     }
 
+    @Override
+    public double calcularDimensaoPorArea(double area) {
+        return Math.sqrt(area);
+    }
+
     public double getLado() {
         return lado;
     }
